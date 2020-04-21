@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket</title>
+
+  <script language="JavaScript" type="text/javascript">
+    const state = {
+      isWebSocketConnected: false,
+    }
+
+    const wsUri = "wss://echo.websocket.org/"
+    let output;
+
+    function init() {
+      output = document.getElementById('output');
+    }
+
+    function connect() {
+      initWebSocket();
+    }
+
+    function disConnect() {
+      websocket.close();
+      state.isWebSocketConnected = false;
+    }
+
+    function initWebSocket() {
+      websocket = new WebSocket(wsUri);
+      websocket.onopen = function (evt) {
+        onOpen(evt);
+      }
+      websocket.onclose = function () {
+        writeToScreen("DISCONNECTED :-(");
+        websocket.close();
+        state.isWebSocketConnected = false;
+      }
+      websocket.onmessage = function (evn) {
+        onMessage(evn)
+      }
+      websocket.onerror = function (evn) {
+        onError(evn);
+      }
+    }
+
+    function onOpen() {
+      writeToScreen("CONNECTED");
+      state.isWebSocketConnected = true;
+    }
+
+    function writeToScreen(message) {
+      const messageContainer = document.createElement('p');
+      messageContainer.style.color = "red";
+      messageContainer.innerHTML = message;
+      output.appendChild(messageContainer);
+    }
+
+    function doSend(message){
+      writeToScreen("SENT: " + message);
+      websocket.send(message);
+    }
+
+    function onMessage(evt) {
+      writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    }
+
+    function onError(evt){
+      writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+    }
+
+    window.addEventListener("load", init, false);
+
+
+    // from DOM:
+    function handleSend() {
+      if(!state.isWebSocketConnected){
+        window.alert("WebSocket not connected!")
+        return;
+      }
+      const message = document.getElementById('formmessage').value;
+      doSend(message);
+    }
+  </script>
+
+</head>
+
+
+<body>
+
+  <h2>WebSocket Test 2</h2>
+
+  <button onclick="connect()">Connect</button>
+  <button onclick="disConnect()">DisConnect</button>
+  <form name="sendMessageForm" onsubmit="return false">
+    <label for="formmessage">
+      Input your message:
+      <input type="text" id="formmessage">
+    </label>
+
+    <button type="submit" onclick="handleSend()">Send</button>
+
+  </form>
+
+  <div id="output"></div>
+
+</body>
+</html>
